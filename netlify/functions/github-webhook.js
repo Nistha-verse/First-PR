@@ -2,12 +2,21 @@ import crypto from 'node:crypto'
 import { gh, groq } from './_lib/github'
 import { publish } from './_lib/bus'
 
-const verifySignature = (rawBody, signature) => {
+const getRawBody = (event) => {
+  if (event.isBase64Encoded) {
+    return Buffer.from(event.body || '', 'base64')
+  }
+  return Buffer.from(event.body || '', 'utf8')
+}
+
+const verifySignature = (rawBodyBuffer, signature) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET
   if (!secret) throw new Error('Missing GITHUB_WEBHOOK_SECRET')
-  const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`
-  const expectedBuf = Buffer.from(expected)
-  const sigBuf = Buffer.from(signature || '')
+  if (!signature) throw new Error('Missing webhook signature header')
+
+  const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBodyBuffer).digest('hex')}`
+  const expectedBuf = Buffer.from(expected, 'utf8')
+  const sigBuf = Buffer.from(signature, 'utf8')
   if (expectedBuf.length !== sigBuf.length || !crypto.timingSafeEqual(expectedBuf, sigBuf)) {
     throw new Error('Invalid webhook signature')
   }
@@ -22,8 +31,10 @@ const analyzePatch = async (patch) => {
 
 export async function handler(event) {
   try {
-    verifySignature(event.body || '', event.headers['x-hub-signature-256'] || event.headers['X-Hub-Signature-256'])
-    const payload = JSON.parse(event.body || '{}')
+    const signature = event.headers['x-hub-signature-256'] || event.headers['X-Hub-Signature-256']
+    const rawBodyBuffer = getRawBody(event)
+    verifySignature(rawBodyBuffer, signature)
+    const payload = JSON.parse(rawBodyBuffer.toString('utf8') || '{}')
     if (!payload.pull_request) return { statusCode: 200, body: JSON.stringify({ ok: true }) }
 
     const owner = payload.repository.owner.login
