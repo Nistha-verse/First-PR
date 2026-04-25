@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { gh, groq } from './_lib/github'
 import { publish } from './_lib/bus'
+import { getSupabase } from './_lib/supabase'
 
 const getRawBody = (event) => {
   if (event.isBase64Encoded) return Buffer.from(event.body || '', 'base64')
@@ -78,6 +79,19 @@ export async function handler(event) {
     }
 
     publish(user, message)
+    try {
+      const supabase = getSupabase()
+      await supabase.from('live_autopsy_events').insert({
+        user_login: user,
+        type: message.type,
+        title: message.title,
+        repo: message.repo,
+        sha: message.sha,
+        lines: message.lines,
+      })
+    } catch (dbErr) {
+      console.error('Supabase insert failed:', dbErr.message)
+    }
     return { statusCode: 200, body: JSON.stringify({ ok: true, warnings: lines.length, message }) }
   } catch (error) {
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) }
