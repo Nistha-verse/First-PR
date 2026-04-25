@@ -83,20 +83,20 @@ export default function PRSimulator({ onGoLive }) {
   }
 
   return (
-    <section className="space-y-4 rounded-xl border border-border p-5">
-      <h2 className="text-xl font-semibold">PR Simulator</h2>
+    <section className="space-y-4 rounded-xl border border-magic/30 bg-[#0f0b1a]/80 p-5 shadow-[0_0_18px_rgba(109,40,217,0.16)]">
+      <h2 className="magic-heading text-xl font-semibold">PR Simulator</h2>
       {!token ? (
-        <button onClick={connectGitHub} className="rounded-md bg-magic px-4 py-2 text-sm">Connect GitHub</button>
+        <button onClick={connectGitHub} className="rounded-md bg-magic px-4 py-2 text-sm text-violet-100">Connect GitHub</button>
       ) : <p className="text-sm text-muted">Connected as {username}</p>}
-      <div className="rounded-lg border border-border p-4">
+      <div className="rounded-lg border border-magic/30 bg-black/25 p-4">
         <p className="text-sm text-muted">Step {index + 1} / {steps.length}</p>
         <h3 className="mt-1 text-lg font-medium">{steps[index]}</h3>
         <p className="mt-2 text-sm text-muted">Safe fake repository mode. No real GitHub changes happen here.</p>
-        <button onClick={next} className="mt-3 rounded bg-accent px-3 py-2 text-sm text-black">Complete Step</button>
+        <button onClick={next} className="mt-3 rounded bg-accent px-3 py-2 text-sm text-violet-100">Complete Step</button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[220px,1fr,300px]">
-        <div className="rounded-lg border border-border p-3">
+        <div className="rounded-lg border border-magic/20 bg-black/25 p-3">
           <p className="mb-2 text-xs font-semibold text-muted">Fake Repo Files</p>
           <div className="space-y-2">
             {Object.keys(files).map((path) => (
@@ -106,7 +106,7 @@ export default function PRSimulator({ onGoLive }) {
                   setSelectedFile(path)
                   setDraft(files[path])
                 }}
-                className={`w-full rounded px-2 py-1 text-left text-xs ${selectedFile === path ? 'bg-accent/20 text-accent' : 'bg-slate-900 text-muted'}`}
+                className={`w-full rounded px-2 py-1 text-left text-xs ${selectedFile === path ? 'bg-accent/30 text-violet-200' : 'bg-slate-900 text-muted'}`}
               >
                 {path}
               </button>
@@ -114,10 +114,10 @@ export default function PRSimulator({ onGoLive }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border p-3">
+        <div className="rounded-lg border border-magic/20 bg-black/25 p-3">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs text-muted">{selectedFile}</p>
-            <button onClick={stageCurrentFileChange} className="rounded border border-border px-2 py-1 text-xs">Save file</button>
+            <button onClick={stageCurrentFileChange} className="rounded border border-magic/40 bg-magic/10 px-2 py-1 text-xs">Save file</button>
           </div>
           <textarea
             value={draft}
@@ -125,16 +125,16 @@ export default function PRSimulator({ onGoLive }) {
             className="h-64 w-full rounded bg-black/40 p-3 font-mono text-xs text-slate-100"
           />
           <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={commitChanges} className="rounded border border-border px-2 py-1 text-xs">
+            <button onClick={commitChanges} className="rounded border border-magic/40 bg-magic/10 px-2 py-1 text-xs">
               Commit ({changedFiles.length} changed)
             </button>
-            <button onClick={openSimulatedPR} className="rounded bg-accent px-2 py-1 text-xs text-black">
+            <button onClick={openSimulatedPR} className="rounded bg-accent px-2 py-1 text-xs text-violet-100">
               Open Simulated PR
             </button>
           </div>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border p-3">
+        <div className="space-y-3 rounded-lg border border-magic/20 bg-black/25 p-3">
           <div>
             <p className="mb-1 text-xs font-semibold text-muted">Commit History</p>
             {commits.length === 0 ? <p className="text-xs text-muted">No commits yet.</p> : commits.map((c) => (
@@ -156,11 +156,11 @@ export default function PRSimulator({ onGoLive }) {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <input value={issueUrl} onChange={(e) => setIssueUrl(e.target.value)} placeholder="Issue URL for export guide" className="rounded-md border border-border bg-transparent p-2 text-sm" />
-        <button title="Like sending a patronus" onClick={downloadGuide} className="rounded-md border border-border px-3 py-2 text-sm">Export Guide</button>
+        <input value={issueUrl} onChange={(e) => setIssueUrl(e.target.value)} placeholder="Issue URL for export guide" className="rounded-md border border-magic/40 bg-black/20 p-2 text-sm" />
+        <button title="Like sending a patronus" onClick={downloadGuide} className="rounded-md border border-magic/40 bg-magic/10 px-3 py-2 text-sm">Export Guide</button>
       </div>
       {guide ? <pre className="whitespace-pre-wrap rounded bg-black/30 p-3 text-xs">{guide}</pre> : null}
-      <button onClick={onGoLive} className="rounded-md bg-accent px-4 py-2 text-sm text-black">Go Live</button>
+      <button onClick={onGoLive} className="rounded-md bg-accent px-4 py-2 text-sm text-violet-100">Go Live</button>
     </section>
   )
 }

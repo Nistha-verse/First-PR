@@ -54,15 +54,15 @@ export default function LiveAutopsy() {
   }, [token, username, grant, addToast])
 
   return (
-    <section className="space-y-4 rounded-xl border border-border p-5">
-      <h2 className="text-xl font-semibold">Live Autopsy</h2>
+    <section className="space-y-4 rounded-xl border border-magic/30 bg-[#0f0b1a]/80 p-5 shadow-[0_0_18px_rgba(109,40,217,0.16)]">
+      <h2 className="magic-heading text-xl font-semibold">Live Autopsy</h2>
       <p className="text-sm text-muted">
         Configure GitHub webhook to <code>/.netlify/functions/github-webhook</code> and open a real PR.
       </p>
       <div className="space-y-2">
         {events.length === 0 ? <p className="text-sm text-muted">Waiting for webhook events...</p> : null}
         {events.map((e, i) => (
-          <div key={`${e.sha}-${i}`} className="rounded-md border border-border p-3 text-sm">
+          <div key={`${e.sha}-${i}`} className="rounded-md border border-magic/20 bg-black/20 p-3 text-sm">
             <p className="font-medium">{e.title}</p>
             <p className="text-xs text-muted">{e.repo} - {e.sha?.slice(0, 7)}</p>
             {e.lines?.length ? (
