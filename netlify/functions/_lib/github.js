@@ -16,19 +16,36 @@ export const gh = async (path, token, init = {}) => {
 }
 
 export const groq = async (prompt) => {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'llama3-70b-8192',
-      temperature: 0.2,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  })
-  if (!res.ok) throw new Error(`Groq request failed: ${res.status}`)
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || 'No response.'
+  const models = [
+    process.env.GROQ_MODEL,
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+  ].filter(Boolean)
+
+  let lastError = 'Unknown Groq failure'
+
+  for (const model of models) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      return data.choices?.[0]?.message?.content || 'No response.'
+    }
+
+    const errText = await res.text()
+    lastError = `Groq request failed: ${res.status} (${model}) ${errText}`
+  }
+
+  throw new Error(lastError)
 }
