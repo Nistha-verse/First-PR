@@ -14,6 +14,9 @@ const getHeader = (headers = {}, key) => {
 }
 
 const verifySignature = (rawBodyBuffer, signature) => {
+  if (String(process.env.SKIP_WEBHOOK_SIGNATURE || '').toLowerCase() === 'true') {
+    return
+  }
   const secret = process.env.GITHUB_WEBHOOK_SECRET
   if (!secret) throw new Error('Missing GITHUB_WEBHOOK_SECRET')
   const normalizedSignature = String(signature || '').trim().toLowerCase()
