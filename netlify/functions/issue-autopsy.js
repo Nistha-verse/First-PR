@@ -19,13 +19,33 @@ export async function handler(event) {
     if (cached && Date.now() - cached.ts < DAY) return { statusCode: 200, body: JSON.stringify(cached.data) }
 
     const { owner, repo, number } = parseIssue(issue.url)
-    const prs = await gh(`/search/issues?q=repo:${owner}/${repo}+type:pr+${number}+in:body&per_page=20`, token)
+    const query = encodeURIComponent(`repo:${owner}/${repo} type:pr ${number} in:body`)
+    const prs = await gh(`/search/issues?q=${query}&per_page=20`, token)
     const summary = (prs.items || []).map((pr) => ({ title: pr.title, body: pr.body || '', state: pr.state }))
+    if (summary.length === 0) {
+      const data = {
+        totalAttempts: 0,
+        commonCause: 'No prior failed attempts found',
+        riskyFiles: [],
+        survivalTips: ['Start small', 'Mention tests/docs in PR description', 'Ask maintainers early if blocked'],
+        survivalChance: 78,
+      }
+      cache.set(key, { ts: Date.now(), data })
+      return { statusCode: 200, body: JSON.stringify(data) }
+    }
+
     const analysis = await groq(
       `Analyze why these PRs around issue #${number} were closed/rejected/abandoned. Return JSON with keys commonCause, riskyFiles(array), survivalTips(array), survivalChance(number). Input: ${JSON.stringify(summary)}`
     )
     const extracted = analysis.match(/\{[\s\S]*\}/)?.[0]
-    const parsed = extracted ? JSON.parse(extracted) : {}
+    let parsed = {}
+    if (extracted) {
+      try {
+        parsed = JSON.parse(extracted)
+      } catch {
+        parsed = {}
+      }
+    }
     const data = {
       totalAttempts: summary.length,
       commonCause: parsed.commonCause || 'Insufficient maintainer communication',
